@@ -2,7 +2,7 @@ import sys
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report
-from helpers import csv_to_df, clean_df
+from helpers import csv_to_df
 
 if __name__ == "__main__":
 
@@ -13,7 +13,7 @@ if __name__ == "__main__":
     test_text_data = test_data['article_words'].to_numpy()
 
     # Create bag of words
-    count = CountVectorizer()
+    count = CountVectorizer(stop_words='english')
     bag_of_words = count.fit_transform(train_text_data)
 
     # Create feature matrix

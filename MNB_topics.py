@@ -13,7 +13,7 @@ if __name__ == "__main__":
     test_text_data = test_data['article_words'].to_numpy()
 
     # Create bag of words
-    count = CountVectorizer()
+    count = CountVectorizer(stop_words='english')
     bag_of_words = count.fit_transform(train_text_data)
 
     # Create feature matrix
