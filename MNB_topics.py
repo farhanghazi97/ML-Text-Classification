@@ -36,9 +36,3 @@ if __name__ == "__main__":
     
     print(accuracy_score(y_test , predicted_y))
     print(classification_report(y_test , predicted_y , zero_division='warn'))
-    
-
-
-    
-
-    
