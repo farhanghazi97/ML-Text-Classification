@@ -13,13 +13,13 @@ text_data = np.array(['I love Brazil. Brazil!',
                       'I like Italy, because Italy is beautiful',
                       'I am from Germany, so I like Germany more'])
 
-
 # Create bag of words
 count = CountVectorizer()
 bag_of_words = count.fit_transform(text_data)
 
 # Create feature matrix
 X = bag_of_words
+
 
 # Create target vector
 y = np.array([0,0,1,0,1])
