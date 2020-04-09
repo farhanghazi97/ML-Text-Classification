@@ -1,4 +1,5 @@
 import sys
+from sklearn.tree import DecisionTreeClassifier
 from sklearn.linear_model import SGDClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
@@ -61,13 +62,20 @@ if __name__ == "__main__":
         ]
     )
 
-    pipelines = [LSVC, sgd, bnb, mnb, rf]
+    dt = Pipeline(
+        [
+            ('vect', TfidfVectorizer(stop_words='english')),
+            ('DT', DecisionTreeClassifier()),
+        ]
+    )
 
-    pipe_dict = {0 : 'LSVC' , 1 : 'SGD', 2 : 'BNB', 3 : 'MNB', 4 : 'RF'}
+    pipelines = [LSVC, sgd, bnb, mnb, rf, dt]
+
+    pipe_dict = {0 : 'LSVC' , 1 : 'SGD', 2 : 'BNB', 3 : 'MNB', 4 : 'RF', 5: 'DT'}
 
     for pipe in pipelines:
         pipe.fit(X_train, y_train)
 
     for i , model in enumerate(pipelines):
         predicted_y = model.predict(X_test)
-        print("{0} - {1}".format(pipe_dict[i] , classification_report(y_test , predicted_y , zero_division=0)))
+        print("{0} - {1}\n".format(pipe_dict[i] , classification_report(y_test , predicted_y , zero_division=0)))

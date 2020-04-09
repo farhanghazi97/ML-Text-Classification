@@ -1,7 +1,7 @@
 import sys
 from sklearn.naive_bayes import BernoulliNB, MultinomialNB
 from sklearn.feature_extraction.text import CountVectorizer
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score, classification_report, plot_confusion_matrix
 from helpers import csv_to_df
 
 if __name__ == "__main__":
