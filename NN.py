@@ -42,7 +42,7 @@ if __name__ == "__main__":
     model.add(Dense(11, activation='softmax'))
     model.compile(loss='categorical_crossentropy', optimizer='adam', metrics=['accuracy'])
 
-    epochs = 1
+    epochs = 5
     batch_size = 64
 
     history = model.fit(
@@ -63,7 +63,8 @@ if __name__ == "__main__":
     seq = tokenizer.texts_to_sequences(words)
     padded = pad_sequences(seq, MAX_SEQUENCE_LENGTH)
     pred = model.predict(padded)
-    print(pred , labels[np.argmax(pred)])
+    print(pred)
+    print(labels[np.argmax(pred)])
 
     # accr = model.evaluate(X_test, y_test)
     # y_pred = model.predict(X_test)
