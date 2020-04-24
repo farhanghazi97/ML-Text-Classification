@@ -142,7 +142,7 @@ if __name__ == "__main__":
     # Print predicted labels
     for actual_label, model_pred in zip(y_test , y_pred):
         prediction = LB.classes_[np.argmax(model_pred)]
-        print(prediction, model_pred[np.argmax(model_pred)])
+        print("Actual: {0}, Prediction: {1}, Score: {2}".format(actual_label, prediction, model_pred[np.argmax(model_pred)]))
 
     
     
