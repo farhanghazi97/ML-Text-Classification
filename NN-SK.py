@@ -15,14 +15,14 @@ import build_model
 NGRAM_RANGE = (1, 2)
 
 # Limit on the number of features. We use the top 20K features.
-TOP_K = 20000
+TOP_K = 2000
 
 # Whether text should be split into word or character n-grams.
 # One of 'word', 'char'.
 TOKEN_MODE = 'word'
 
 # Minimum document/corpus frequency below which a token will be discarded.
-MIN_DOCUMENT_FREQUENCY = 2
+MIN_DOCUMENT_FREQUENCY = 120
 
 def ngram_vectorize(train_texts, train_labels, val_texts):
     """Vectorizes texts as n-gram vectors.
@@ -61,13 +61,25 @@ def ngram_vectorize(train_texts, train_labels, val_texts):
     selector.fit(x_train, train_labels)
     x_train = selector.transform(x_train).astype('float32')
     x_val = selector.transform(x_val).astype('float32')
-    return x_train, x_val
+    return x_train, x_val, vectorizer
+
+def ngram_vectorize_test_data(test_texts, test_labels, vectorizer):
+
+    # Learn vocabulary from training texts and vectorize training texts.
+    X_test = vectorizer.transform(test_texts)
+
+    # Select top 'k' of the vectorized features.
+    selector = SelectKBest(f_classif, k=min(TOP_K, X_test.shape[1]))
+    selector.fit(X_test, test_labels)
+    X_test = selector.transform(X_test).astype('float32')
+    return X_test
+
 
 if __name__ == "__main__":
 
     training_data = csv_to_df('training.csv')
     X_train, X_val, y_train, y_val = train_test_split(training_data['article_words'], training_data['topic'], test_size=0.10, random_state=42)
-    X_train, X_val = ngram_vectorize(X_train, y_train, X_val)
+    X_train, X_val, vectorizer = ngram_vectorize(X_train, y_train, X_val)
 
     LB = LabelEncoder()
     train_labels = LB.fit_transform(y_train)
@@ -107,24 +119,22 @@ if __name__ == "__main__":
     history = history.history
     print('Validation accuracy: {acc}, loss: {loss}'.format(acc=history['val_acc'][-1], loss=history['val_loss'][-1]))
 
-    # Create keyword arguments to pass to the 'tf-idf' vectorizer.
-    kwargs = {
-            'ngram_range': NGRAM_RANGE,  # Use 1-grams + 2-grams.
-            'dtype': 'int32',
-            'strip_accents': 'unicode',
-            'decode_error': 'replace',
-            'analyzer': TOKEN_MODE,  # Split text into word tokens.
-            'min_df': MIN_DOCUMENT_FREQUENCY,
-            'tokenizer': lambda x:x.split(','),
-            
-    }
-    vectorizer = TfidfVectorizer(**kwargs)
-
     test_data = csv_to_df('test.csv')
+    
+    X_test = test_data['article_words']
+    y_test = test_data['topic']
+    
+    # X_test, X_val, y_test, y_val = train_test_split(test_data['article_words'], test_data['topic'], test_size=0.10, random_state=42)
+    X_test = ngram_vectorize_test_data(X_test, y_test, vectorizer)
 
-    # Learn vocabulary from training texts and vectorize training texts.
-    X_test = vectorizer.fit_transform(test_data['article_words'])
+    test_labels = LB.transform(y_test)
 
-    y_test = LB.fit_transform(test_data['topic'])
+    score, acc = model.evaluate(X_test, test_labels, batch_size=32)
 
-    preds = model.predict(X_test)
+    print(score, acc)
+
+    
+    
+
+
+    
