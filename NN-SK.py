@@ -9,6 +9,7 @@ from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
 from sklearn.preprocessing import LabelEncoder
 import build_model
+import numpy as np
 
 # Vectorization parameters
 # Range (inclusive) of n-gram sizes for tokenizing text.
@@ -74,7 +75,6 @@ def ngram_vectorize_test_data(test_texts, test_labels, vectorizer):
     X_test = selector.transform(X_test).astype('float32')
     return X_test
 
-
 if __name__ == "__main__":
 
     training_data = csv_to_df('training.csv')
@@ -113,26 +113,38 @@ if __name__ == "__main__":
             callbacks=callbacks,
             validation_data=(X_val, val_labels),
             verbose=2,  # Logs once per epoch.
-            batch_size=128)
+            batch_size=64)
 
     # Print results.
     history = history.history
     print('Validation accuracy: {acc}, loss: {loss}'.format(acc=history['val_acc'][-1], loss=history['val_loss'][-1]))
 
+    # Read in test file
     test_data = csv_to_df('test.csv')
     
+    # Get test data
     X_test = test_data['article_words']
     y_test = test_data['topic']
     
-    # X_test, X_val, y_test, y_val = train_test_split(test_data['article_words'], test_data['topic'], test_size=0.10, random_state=42)
+    # Preprocess test data
     X_test = ngram_vectorize_test_data(X_test, y_test, vectorizer)
 
+    # Label encode test data labels
     test_labels = LB.transform(y_test)
 
-    score, acc = model.evaluate(X_test, test_labels, batch_size=32)
+    # Make prediction on test set
+    y_pred = model.predict(X_test)
 
+    # Evalulate model performance on test set
+    score, acc = model.evaluate(X_test, test_labels, batch_size=64)
     print(score, acc)
 
+    # Print predicted labels
+    for actual_label, model_pred in zip(y_test , y_pred):
+        prediction = LB.classes_[np.argmax(model_pred)]
+        print(prediction, model_pred[np.argmax(model_pred)])
+
+    
     
     
 
