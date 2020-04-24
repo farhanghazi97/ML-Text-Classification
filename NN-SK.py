@@ -2,6 +2,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.feature_selection import SelectKBest
 from sklearn.feature_selection import f_classif
 from sklearn.model_selection import train_test_split
+from sklearn.metrics import classification_report
 from helpers import csv_to_df
 from keras.models import Sequential
 from keras.layers import Dense, Dropout
@@ -87,11 +88,13 @@ if __name__ == "__main__":
 
     num_classes = len(list((training_data['topic'].value_counts()).keys()))
 
-    model = build_model.mlp_model(layers=2,
-                                  units=64,
-                                  dropout_rate=0.2,
-                                  input_shape=X_train.shape[1:],
-                                  num_classes=num_classes)
+    model = build_model.mlp_model(
+        layers=2,
+        units=64,
+        dropout_rate=0.2,
+        input_shape=X_train.shape[1:],
+        num_classes=num_classes
+    )
 
     # Compile model with learning parameters.
     if num_classes == 2:
@@ -107,13 +110,14 @@ if __name__ == "__main__":
 
     # Train and validate model.
     history = model.fit(
-            X_train,
-            train_labels,
-            epochs=50,
-            callbacks=callbacks,
-            validation_data=(X_val, val_labels),
-            verbose=2,  # Logs once per epoch.
-            batch_size=64)
+        X_train,
+        train_labels,
+        epochs=50,
+        callbacks=callbacks,
+        validation_data=(X_val, val_labels),
+        verbose=2,  # Logs once per epoch.
+        batch_size=64
+    )
 
     # Print results.
     history = history.history
@@ -125,6 +129,7 @@ if __name__ == "__main__":
     # Get test data
     X_test = test_data['article_words']
     y_test = test_data['topic']
+    article_ID = test_data['article_number']
     
     # Preprocess test data
     X_test = ngram_vectorize_test_data(X_test, y_test, vectorizer)
@@ -139,10 +144,25 @@ if __name__ == "__main__":
     score, acc = model.evaluate(X_test, test_labels, batch_size=64)
     print("Loss score: {0}, Accuracy: {1}".format(score, acc))
 
-    # Print predicted labels
-    for actual_label, model_pred in zip(y_test , y_pred):
+    # Create topic dict
+    topic_wise_labels = {}
+    for topic in LB.classes_:
+        topic_wise_labels[topic] = []
+
+    # Update topic dict and create pred_list for CR
+    pred_labels = []
+    for ID, actual_label, model_pred in zip(article_ID, y_test , y_pred):
         prediction = LB.classes_[np.argmax(model_pred)]
-        print("Actual: {0}, Prediction: {1}, Score: {2}".format(actual_label, prediction, model_pred[np.argmax(model_pred)]))
+        pred_labels.append(prediction)
+        topic_wise_labels[prediction].append((ID , model_pred[np.argmax(model_pred)]))
+
+    # Sort each topic list by score value
+    for topic in topic_wise_labels:
+        topic_wise_labels[topic] = sorted(topic_wise_labels[topic] , key=lambda x: x[1], reverse=True)
+        print(topic , topic_wise_labels[topic])
+
+    # Calculate metrics via classification report
+    print(classification_report(y_test, pred_labels))
 
     
     
