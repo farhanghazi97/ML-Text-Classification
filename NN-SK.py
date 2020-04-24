@@ -137,7 +137,7 @@ if __name__ == "__main__":
 
     # Evalulate model performance on test set
     score, acc = model.evaluate(X_test, test_labels, batch_size=64)
-    print(score, acc)
+    print("Loss score: {0}, Accuracy: {1}".format(score, acc))
 
     # Print predicted labels
     for actual_label, model_pred in zip(y_test , y_pred):
