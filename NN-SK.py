@@ -90,7 +90,7 @@ if __name__ == "__main__":
 
     model = build_model.mlp_model(
         layers=2,
-        units=64,
+        units=32,
         dropout_rate=0.2,
         input_shape=X_train.shape[1:],
         num_classes=num_classes
@@ -159,14 +159,11 @@ if __name__ == "__main__":
     # Sort each topic list by score value
     for topic in topic_wise_labels:
         topic_wise_labels[topic] = sorted(topic_wise_labels[topic] , key=lambda x: x[1], reverse=True)
-        print(topic , topic_wise_labels[topic])
+    
+    for topic in topic_wise_labels:
+        print("{0}".format(topic))
+        for article in topic_wise_labels[topic][:10]:
+            print(" {0}".format(article))
 
     # Calculate metrics via classification report
-    print(classification_report(y_test, pred_labels))
-
-    
-    
-    
-
-
-    
+    print(classification_report(y_test, pred_labels, zero_division=0))
