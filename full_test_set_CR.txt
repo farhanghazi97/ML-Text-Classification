@@ -1,0 +1,20 @@
+Validation accuracy: 0.7747368216514587, loss: 0.547620398872777
+Loss score: 0.5297991228103638, Accuracy: 0.7680000066757202
+                                  precision    recall  f1-score   support
+
+      ARTS CULTURE ENTERTAINMENT       0.33      0.67      0.44         3
+BIOGRAPHIES PERSONALITIES PEOPLE       0.60      0.20      0.30        15
+                         DEFENCE       0.89      0.62      0.73        13
+                DOMESTIC MARKETS       0.50      0.50      0.50         2
+                   FOREX MARKETS       0.50      0.35      0.41        48
+                          HEALTH       0.90      0.64      0.75        14
+                      IRRELEVANT       0.86      0.89      0.88       266
+                   MONEY MARKETS       0.49      0.67      0.57        69
+          SCIENCE AND TECHNOLOGY       0.00      0.00      0.00         3
+                  SHARE LISTINGS       0.50      0.43      0.46         7
+                          SPORTS       0.95      0.98      0.97        60
+
+                        accuracy                           0.79       500
+                       macro avg       0.59      0.54      0.55       500
+                    weighted avg       0.77      0.77      0.76       500
+
