@@ -79,6 +79,8 @@ def ngram_vectorize_test_data(test_texts, test_labels, vectorizer):
 if __name__ == "__main__":
 
     training_data = csv_to_df('training.csv')
+    training_data = training_data.set_index('article_number')
+
     X_train, X_val, y_train, y_val = train_test_split(training_data['article_words'], training_data['topic'], test_size=0.10, random_state=42)
     X_train, X_val, vectorizer = ngram_vectorize(X_train, y_train, X_val)
 
@@ -130,6 +132,9 @@ if __name__ == "__main__":
     X_test = test_data['article_words']
     y_test = test_data['topic']
     article_ID = test_data['article_number']
+
+    test_data = test_data.astype({'article_number' : 'int32'})
+    test_data = test_data.set_index('article_number')
     
     # Preprocess test data
     X_test = ngram_vectorize_test_data(X_test, y_test, vectorizer)
@@ -144,26 +149,42 @@ if __name__ == "__main__":
     score, acc = model.evaluate(X_test, test_labels, batch_size=64)
     print("Loss score: {0}, Accuracy: {1}".format(score, acc))
 
-    # Create topic dict
+    # Create dict to contain predicted labels for each article instance
     topic_wise_labels = {}
     for topic in LB.classes_:
         topic_wise_labels[topic] = []
+    topic_wise_pred_labels = {}
+    for topic in LB.classes_:
+        topic_wise_pred_labels[topic] = []
 
     # Update topic dict and create pred_list for CR
-    pred_labels = []
+    full_set_pred_labels = []
     for ID, actual_label, model_pred in zip(article_ID, y_test , y_pred):
         prediction = LB.classes_[np.argmax(model_pred)]
-        pred_labels.append(prediction)
-        topic_wise_labels[prediction].append((ID , model_pred[np.argmax(model_pred)]))
+        full_set_pred_labels.append(prediction)
+        topic_wise_labels[prediction].append((int(ID) , model_pred[np.argmax(model_pred)]))
 
     # Sort each topic list by score value
     for topic in topic_wise_labels:
         topic_wise_labels[topic] = sorted(topic_wise_labels[topic] , key=lambda x: x[1], reverse=True)
-    
+
+    # Consolidate actual labels into dict of structure {'topic1' : [list of labels] , 'topic2': [list of labels]}
     for topic in topic_wise_labels:
-        print("{0}".format(topic))
-        for article in topic_wise_labels[topic][:10]:
-            print(" {0}".format(article))
+        for topic_list in topic_wise_labels[topic]:
+            topic_wise_pred_labels[topic].append(topic)
+    actual_label_dict = {}
+    for topic in topic_wise_labels:
+        lst = [tup[0] for tup in topic_wise_labels[topic]]
+        rows = test_data.loc[lst , 'topic'].to_list()
+        actual_label_dict[topic] = rows
+
+    # Run classification report for each topic
+    for (Atopic, Alabel), (Ptopic, Plabel) in zip(actual_label_dict.items(), topic_wise_pred_labels.items()):
+        print("----------{0}----------".format(Atopic))
+        if(len(topic_wise_pred_labels[Atopic]) > 0):
+            print(classification_report(actual_label_dict[Atopic] , topic_wise_pred_labels[Ptopic], zero_division=0))
+        else:
+            print("No predictions made for this topic!")
 
     # Calculate metrics via classification report
-    print(classification_report(y_test, pred_labels, zero_division=0))
+    print(classification_report(y_test, full_set_pred_labels, zero_division=0))
